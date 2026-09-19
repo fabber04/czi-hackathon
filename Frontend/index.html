@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=platform" />
+  <link rel="stylesheet" href="styles.css?v=nopreview" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -272,16 +272,6 @@
   </div>
 
   <div class="snackbar" id="snackbar" role="status" aria-live="polite"></div>
-
-  <div class="lab" aria-label="Prototype state switcher">
-    <span class="lab-label">Preview states</span>
-    <button class="chip active" data-state="empty">Empty</button>
-    <button class="chip" data-state="uploaded">Uploaded</button>
-    <button class="chip" data-state="processing">Processing</button>
-    <button class="chip" data-state="success">Success</button>
-    <button class="chip" data-state="e503">503</button>
-    <button class="chip" data-state="error">Error</button>
-  </div>
 
   <script>
     /* ---------- Data (single source for table, cards, totals, and PDF) ---------- */
@@ -623,14 +613,6 @@
       if (sidebar.classList.contains("open")) setDrawer(false);
     }));
 
-    /* ---------- Prototype state switcher ---------- */
-    document.querySelectorAll(".chip").forEach((chip) => {
-      chip.addEventListener("click", () => {
-        if (chip.dataset.state !== "empty") preview = samplePreview;
-        setState(chip.dataset.state);
-      });
-    });
-
     /* ---------- State machine ---------- */
     function setState(state) {
       clearTimeout(timer);
@@ -669,7 +651,6 @@
       $("processLabel").textContent = busy ? "Analyzing ledger…" : state === "success" ? "Analyze again" : "Analyze ledger";
 
       $("navCert").setAttribute("aria-disabled", String(state !== "success"));
-      document.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c.dataset.state === state));
 
       if (state === "success") {
         const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
