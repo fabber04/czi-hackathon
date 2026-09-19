@@ -269,9 +269,36 @@ body {
 .item-bar.credit { background: var(--orange); }
 .item-bar.expense { background: var(--rose); }
 
-.item-bar-row b {
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
+.lang-card {
+  margin-top: 12px;
+}
+
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.lang-grid section {
+  background: #f8f6f2;
+  border-radius: 14px;
+  padding: 14px 16px 16px;
+}
+
+.lang-grid h3 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lang-grid p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
 }
 
 .mix-cash {
@@ -1314,7 +1341,8 @@ td {
   .kpis,
   .grid-2,
   .mix-visual,
-  .item-bar-row {
+  .item-bar-row,
+  .lang-grid {
     grid-template-columns: 1fr;
   }
 

@@ -901,7 +901,17 @@ if result:
             "IsiNdebele": result.get("summary_ndebele") or "Asikho isifinyezo.",
         }
         st.subheader("Local summary", icon=":material/translate:")
-        st.markdown(summaries.get(summary_lang) or summaries["ChiShona"])
+        st.caption("English, ChiShona, and IsiNdebele so a trader who does not use English can still hear the day's book.")
+        english_col, shona_col, ndebele_col = st.columns(3, gap="medium")
+        with english_col:
+            st.markdown("**English**")
+            st.markdown(summaries["English"])
+        with shona_col:
+            st.markdown("**ChiShona**")
+            st.markdown(summaries["ChiShona"])
+        with ndebele_col:
+            st.markdown("**IsiNdebele**")
+            st.markdown(summaries["IsiNdebele"])
         st.caption(
             "AI-assisted indexing only. Totals are recalculated from extracted line items. "
             "Pfupiso iyi haisi audit. Lesifinyezo akusona i-audit."

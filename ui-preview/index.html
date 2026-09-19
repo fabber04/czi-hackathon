@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=charts" />
+  <link rel="stylesheet" href="styles.css?v=langs" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -161,6 +161,24 @@
               <div class="card-head"><h2>Recent items</h2></div>
               <div id="recentItems"></div>
             </article>
+            <article class="card lang-card">
+              <div class="card-head"><h2>Market language summary</h2></div>
+              <p class="mix-caption">English, ChiShona, and IsiNdebele so a trader who does not use English can still hear the day's book.</p>
+              <div class="lang-grid">
+                <section>
+                  <h3>English</h3>
+                  <p id="overviewEnglish"></p>
+                </section>
+                <section>
+                  <h3>ChiShona</h3>
+                  <p id="overviewShona"></p>
+                </section>
+                <section>
+                  <h3>IsiNdebele</h3>
+                  <p id="overviewNdebele"></p>
+                </section>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -288,9 +306,20 @@
           </div>
           <article class="card hidden" id="certResults">
             <h2 id="certTitle"></h2>
-            <p id="certSummary"></p>
-            <p id="certShona"></p>
-            <p id="certNdebele"></p>
+            <div class="lang-grid">
+              <section>
+                <h3>English</h3>
+                <p id="certSummary"></p>
+              </section>
+              <section>
+                <h3>ChiShona</h3>
+                <p id="certShona"></p>
+              </section>
+              <section>
+                <h3>IsiNdebele</h3>
+                <p id="certNdebele"></p>
+              </section>
+            </div>
           </article>
         </section>
       </main>
@@ -481,6 +510,9 @@
       document.getElementById("certSummary").textContent = result.business_health_summary || "";
       document.getElementById("certShona").textContent = result.summary_shona || "";
       document.getElementById("certNdebele").textContent = result.summary_ndebele || "";
+      document.getElementById("overviewEnglish").textContent = result.business_health_summary || "";
+      document.getElementById("overviewShona").textContent = result.summary_shona || "";
+      document.getElementById("overviewNdebele").textContent = result.summary_ndebele || "";
       document.getElementById("downloadBtn").disabled = false;
     }
 
