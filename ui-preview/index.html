@@ -85,7 +85,39 @@
             <button class="btn-dark" type="button" data-view="capture">+ Capture ledger</button>
           </div>
 
-          <div class="kpis">
+          <div class="empty-panel" id="overviewEmpty">
+            <div class="ledger-wait" aria-hidden="true">
+              <div class="ledger-wait-scene">
+                <span class="orbit orbit-a"></span>
+                <span class="orbit orbit-b"></span>
+                <span class="spark spark-1"></span>
+                <span class="spark spark-2"></span>
+                <span class="spark spark-3"></span>
+                <div class="notebook">
+                  <div class="notebook-spine"></div>
+                  <div class="notebook-page">
+                    <span class="rule"></span>
+                    <span class="rule"></span>
+                    <span class="rule"></span>
+                    <span class="rule"></span>
+                    <span class="ink ink-1"></span>
+                    <span class="ink ink-2"></span>
+                    <span class="ink ink-3"></span>
+                    <span class="ink ink-4"></span>
+                    <span class="scan-beam"></span>
+                  </div>
+                </div>
+                <span class="float-chip chip-cash">Cash</span>
+                <span class="float-chip chip-credit">Chikwereti</span>
+              </div>
+            </div>
+            <h2>Waiting for a ledger</h2>
+            <p id="overviewWaitCopy">Charts, line items, and collections appear after Gemini extracts a photo or spoken statement.</p>
+            <p class="wait-tip" id="overviewWaitTip">Gemini is ready when you are — snap the notebook or speak the day.</p>
+            <button class="btn-dark" type="button" data-view="capture">Go to capture</button>
+          </div>
+
+          <div class="kpis hidden" id="overviewKpis">
             <article class="kpi">
               <div class="kpi-top"><span class="kpi-label">Recorded revenue</span></div>
               <p class="value muted-value" id="kpiRevenue">$0.00</p>
@@ -104,11 +136,6 @@
             </article>
           </div>
 
-          <div class="empty-panel" id="overviewEmpty">
-            <h2>Waiting for a ledger</h2>
-            <p>Charts, line items, and collections appear after Gemini extracts a photo or spoken statement.</p>
-            <button class="btn-dark" type="button" data-view="capture">Go to capture</button>
-          </div>
           <div id="overviewResults" class="hidden">
             <div class="grid-2">
               <article class="card">
@@ -135,8 +162,9 @@
             <div class="dropzone" id="dropzone">
               <h2>Upload ledger image</h2>
               <p>Drag and drop or browse · JPG, PNG up to 10MB</p>
-              <button class="btn-dark" type="button" id="browseBtn" style="margin-top:16px">Browse files</button>
-              <input id="fileInput" type="file" accept="image/jpeg,image/png" hidden />
+            <button class="btn-dark" type="button" id="browseBtn" style="margin-top:16px">Browse files</button>
+            <button class="btn-dark" type="button" id="sampleBtn" style="margin-top:10px">Try sample ledger</button>
+            <input id="fileInput" type="file" accept="image/jpeg,image/png" hidden />
             </div>
             <div class="voice-card">
               <h2>Speak statement</h2>
@@ -151,7 +179,7 @@
           </div>
           <div id="previewWrap" class="hidden">
             <article class="preview-card">
-              <span class="badge-sample" id="sampleBadge">Sample</span>
+              <span class="badge-sample hidden" id="sampleBadge">Sample</span>
               <div class="preview-art" id="previewArt"></div>
               <div class="caption-bar">
                 <span id="fileName">ledger.png</span>
@@ -162,6 +190,36 @@
           </div>
           <div style="margin-top:16px">
             <button class="btn-dark" type="button" id="processBtn" disabled>Process ledger with Gemini Vision</button>
+          </div>
+          <div id="extractWait" class="extract-wait hidden" role="status" aria-live="polite" aria-atomic="true">
+            <div class="ledger-wait" aria-hidden="true">
+              <div class="ledger-wait-scene compact">
+                <span class="orbit orbit-a"></span>
+                <span class="orbit orbit-b"></span>
+                <span class="spark spark-1"></span>
+                <span class="spark spark-2"></span>
+                <span class="spark spark-3"></span>
+                <div class="notebook">
+                  <div class="notebook-spine"></div>
+                  <div class="notebook-page">
+                    <span class="rule"></span>
+                    <span class="rule"></span>
+                    <span class="rule"></span>
+                    <span class="rule"></span>
+                    <span class="ink ink-1"></span>
+                    <span class="ink ink-2"></span>
+                    <span class="ink ink-3"></span>
+                    <span class="ink ink-4"></span>
+                    <span class="scan-beam"></span>
+                  </div>
+                </div>
+                <span class="float-chip chip-cash">Cash</span>
+                <span class="float-chip chip-credit">Chikwereti</span>
+              </div>
+            </div>
+            <h2 id="extractWaitTitle">Reading the ledger</h2>
+            <p id="extractWaitCopy">Gemini is tracing handwriting and splitting cash from credit.</p>
+            <div class="wait-dots" aria-hidden="true"><span></span><span></span><span></span></div>
           </div>
           <div id="error503" class="banner warning hidden" role="alert">
             <div>
@@ -245,6 +303,56 @@
     const errorGeneral = document.getElementById("errorGeneral");
     let pendingMedia = null;
     let lastResult = null;
+    let waitCopyTimer = null;
+    const idleTips = [
+      "Gemini is ready when you are — snap the notebook or speak the day.",
+      "Handwriting, cash, and chikwereti land in one certificate.",
+      "A clearer page means cleaner totals for the loan conversation.",
+      "Voice works too: say the item, the amount, and who still owes.",
+    ];
+    const isGitHubPages = /\.github\.io$/i.test(location.hostname);
+    const sampleLedger = {
+      business_name: "Gogo Chipo Fresh Produce",
+      date: "2026-09-19",
+      transactions: [
+        { item: "Tomatoes", quantity: "3 crates", amount_usd: 12, payment_type: "Cash", debtor: "N/A" },
+        { item: "Onions", quantity: "2 bags", amount_usd: 8, payment_type: "Cash", debtor: "N/A" },
+        { item: "Potatoes 5kg", quantity: "1", amount_usd: 4.5, payment_type: "Credit", debtor: "Sekuru Peter" },
+        { item: "Spinach", quantity: "1 bunch", amount_usd: 1, payment_type: "Cash", debtor: "N/A" },
+        { item: "Bananas 4kg", quantity: "1", amount_usd: 6, payment_type: "Credit", debtor: "Amai Rudo" },
+        { item: "Stall fee", quantity: "1", amount_usd: 5, payment_type: "Expense", debtor: "N/A" }
+      ],
+      total_revenue_usd: 31.5,
+      total_cash_usd: 21,
+      total_credit_outstanding_usd: 10.5,
+      business_health_summary: "Gogo Chipo Fresh Produce recorded $31.50 in sales, with $21.00 received in cash. Outstanding chikwereti of $10.50 (Amai Rudo, Sekuru Peter) is well below cash on hand.",
+      summary_shona: "Gogo Chipo vakawana $31.50. Cash $21.00, chikwereti $10.50 chaAmai Rudo naSekuru Peter hachina kukunda mari iripo.",
+      summary_ndebele: "UGogo Chipo uthole $31.50. Cash $21.00, isikwelete $10.50 sikaAmai Rudo loSekuru Peter singaphansi kwemali ekhona."
+    };
+    const extractSteps = [
+      ["Sharpening the page", "Compressing the photo so Gemini can read the ink."],
+      ["Tracing the handwriting", "Following each notebook line the way a trader wrote it."],
+      ["Splitting cash from chikwereti", "Cash in one column. Credit stays with the customer name."],
+      ["Tallying today's sales", "Adding line items so the totals match the page."],
+      ["Writing your certificate", "English, ChiShona, and IsiNdebele health notes come last."],
+    ];
+
+    function cycleCopy(el, lines, ms) {
+      if (!el || !lines.length) return;
+      let index = 0;
+      clearInterval(waitCopyTimer);
+      waitCopyTimer = setInterval(() => {
+        index = (index + 1) % lines.length;
+        el.classList.add("wait-copy-swap");
+        window.setTimeout(() => {
+          el.textContent = lines[index];
+          el.classList.remove("wait-copy-swap");
+        }, 220);
+      }, ms);
+    }
+
+    const idleTip = document.getElementById("overviewWaitTip");
+    cycleCopy(idleTip, idleTips, 3800);
 
     function money(value) {
       return "$" + Number(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -284,6 +392,7 @@
       document.getElementById("kpiShare").textContent = share;
       document.getElementById("overviewLead").textContent = name + " · " + date;
       document.getElementById("overviewEmpty").classList.add("hidden");
+      document.getElementById("overviewKpis").classList.remove("hidden");
       document.getElementById("overviewResults").classList.remove("hidden");
 
       const cashPct = revenue > 0 ? (cash / revenue) * 100 : 0;
@@ -320,6 +429,19 @@
     }
 
     document.getElementById("browseBtn").addEventListener("click", (e) => { e.stopPropagation(); document.getElementById("fileInput").click(); });
+    document.getElementById("sampleBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      pendingMedia = { source: "image", mime: "image/jpeg", blob: new Blob(["sample"], { type: "image/jpeg" }), demo: true };
+      preview.classList.remove("hidden");
+      document.getElementById("sampleBadge").classList.remove("hidden");
+      document.getElementById("fileName").textContent = "gogo-chipo-sample.png";
+      document.getElementById("fileSize").textContent = "Demo";
+      document.getElementById("previewArt").innerHTML = "<p class='size'>Sample Gogo Chipo produce ledger</p>";
+      processBtn.disabled = false;
+      processBtn.textContent = isGitHubPages
+        ? "Play sample certificate"
+        : "Process ledger with Gemini Vision";
+    });
     document.getElementById("fileInput").addEventListener("change", () => {
       const file = document.getElementById("fileInput").files[0];
       if (file) showUploadedFile(file);
@@ -334,29 +456,54 @@
       if (processBtn.disabled || !pendingMedia) return;
       error503.classList.add("hidden");
       errorGeneral.classList.add("hidden");
+      const extractWait = document.getElementById("extractWait");
+      const waitTitle = document.getElementById("extractWaitTitle");
+      const waitCopy = document.getElementById("extractWaitCopy");
+      extractWait.classList.remove("hidden");
+      extractWait.scrollIntoView({ behavior: "smooth", block: "center" });
       processBtn.disabled = true;
-      processBtn.textContent = "Reading ledger with Gemini…";
+      processBtn.textContent = "Gemini is reading…";
+      let step = 0;
+      waitTitle.textContent = extractSteps[0][0];
+      waitCopy.textContent = extractSteps[0][1];
+      const stepTimer = setInterval(() => {
+        step = (step + 1) % extractSteps.length;
+        waitTitle.classList.add("wait-copy-swap");
+        waitCopy.classList.add("wait-copy-swap");
+        window.setTimeout(() => {
+          waitTitle.textContent = extractSteps[step][0];
+          waitCopy.textContent = extractSteps[step][1];
+          waitTitle.classList.remove("wait-copy-swap");
+          waitCopy.classList.remove("wait-copy-swap");
+        }, 180);
+      }, 2400);
       try {
-        const data = await blobToB64(pendingMedia.blob);
-        const response = await fetch("/api/extract", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            source: pendingMedia.source,
-            mime_type: pendingMedia.mime,
-            data,
-          }),
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          const message = payload.error || "Gemini could not read this ledger.";
-          if (response.status === 503 || /503|overload/i.test(message)) {
-            error503.classList.remove("hidden");
-          } else {
-            errorGeneral.querySelector("p").textContent = message;
-            errorGeneral.classList.remove("hidden");
+        let payload;
+        if (isGitHubPages || pendingMedia.demo) {
+          await new Promise((resolve) => setTimeout(resolve, 5200));
+          payload = sampleLedger;
+        } else {
+          const data = await blobToB64(pendingMedia.blob);
+          const response = await fetch("/api/extract", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              source: pendingMedia.source,
+              mime_type: pendingMedia.mime,
+              data,
+            }),
+          });
+          payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload.error || "Gemini could not read this ledger.";
+            if (response.status === 503 || /503|overload/i.test(message)) {
+              error503.classList.remove("hidden");
+            } else {
+              errorGeneral.querySelector("p").textContent = message;
+              errorGeneral.classList.remove("hidden");
+            }
+            return;
           }
-          return;
         }
         renderLedger(payload);
         showView("overview");
@@ -365,6 +512,8 @@
           "Could not reach the extract API. Run python preview_server.py and open http://127.0.0.1:8765/";
         errorGeneral.classList.remove("hidden");
       } finally {
+        clearInterval(stepTimer);
+        extractWait.classList.add("hidden");
         processBtn.disabled = false;
         processBtn.textContent = pendingMedia && pendingMedia.source === "audio"
           ? "Process spoken statement with Gemini"
