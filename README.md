@@ -12,6 +12,12 @@ Informal traders manage transactions using paper notebooks, which makes it hard 
 - **Structured outputs:** Converts visual data into a JSON payload the app can display and download.
 - **Stack:** Python, Streamlit, `google-genai` SDK, Pandas, Pillow.
 
+## Live demo
+
+GitHub Pages hosts the static frontend at [https://fabber04.github.io/czi-hackathon/](https://fabber04.github.io/czi-hackathon/).
+
+The Streamlit + Gemini backend still needs to run locally (`streamlit run app.py`).
+
 ## Run locally
 
 1. `python -m venv .venv`
