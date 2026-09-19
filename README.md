@@ -8,7 +8,7 @@ Informal traders keep daily sales and *chikwereti* (customer credit) in paper no
 
 ## Demo
 
-[Live UI on GitHub Pages](https://fabber04.github.io/czi-hackathon/) — dashboard, wait animation, and a sample Gogo Chipo certificate. Live Gemini extraction still runs locally with `python preview_server.py` or `streamlit run app.py`.
+[Live UI on GitHub Pages](https://fabber04.github.io/czi-hackathon/) — the PocketLedger analysis platform. Live Gemini extraction still runs locally with `python preview_server.py` or `streamlit run app.py`.
 
 **1. Capture.** Photograph a notebook page or dictate the day’s sales in English, ChiShona, or IsiNdebele.
 
