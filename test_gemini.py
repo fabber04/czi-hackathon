@@ -1,19 +1,21 @@
-"""Independent Gemini API test.
-
-Set GEMINI_API_KEY as a user environment variable, or put it in a local .env file.
-Run from the project folder with the virtual environment active:
-
-    python test_gemini.py
-"""
+import os
 
 from dotenv import load_dotenv
 from google import genai
 
 load_dotenv()
 
-client = genai.Client()
-interaction = client.interactions.create(
-    model="gemini-3.6-flash",
-    input="Explain AI governance in one simple sentence.",
-)
-print(interaction.output_text)
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    print("GEMINI_API_KEY not found. Enter a key in the app sidebar or add it to a .env file.")
+else:
+    try:
+        client = genai.Client(api_key=api_key)
+        interaction = client.interactions.create(
+            model="gemini-3.6-flash",
+            input="Confirm API connection for PocketLedger hackathon project in one sentence.",
+        )
+        print("API connection successful.")
+        print("Response:", interaction.output_text)
+    except Exception as error:
+        print("Error testing Gemini API:", str(error))

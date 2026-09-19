@@ -1,3 +1,6 @@
 streamlit
 google-genai
 python-dotenv
+pillow
+pandas
+fpdf2

@@ -1,52 +1,29 @@
-# Hack for Humanity Harare 2026 — Gemini Starter
+# PocketLedger — AI financial certificate for informal traders
 
-A beginner Streamlit prototype that sends a human-problem description to the Gemini API and displays a structured response.
+Built for **Hack for Humanity Harare 2026** (challenge: Best Use of the Google Gemini API).
 
-## Problem
+## Problem and solution
 
-Replace this with the specific human problem your team chose, and name the intended user.
+Informal traders manage transactions using paper notebooks, which makes it hard to prove cash flow for micro-loans. PocketLedger uses Gemini Vision (`gemini-3.6-flash`) to scan handwritten ledgers, classify cash versus credit (*chikwereti*) sales, and generate a structured micro-business financial health certificate.
 
-## Solution
+## Gemini integration and tech stack
 
-A local Streamlit app: user input → Python → Gemini API → useful output in the browser.
+- **Multimodal vision:** Reads non-standard layout entries from paper notebook photos.
+- **Structured outputs:** Converts visual data into a JSON payload the app can display and download.
+- **Stack:** Python, Streamlit, `google-genai` SDK, Pandas, Pillow.
 
-## Gemini integration
-
-`app.py` calls `client.interactions.create()` with `gemini-3.6-flash` when the user clicks **Ask Gemini**. That runtime API call is the challenge requirement — Gemini is not only used to write code.
-
-## Tech stack
-
-- Python
-- Streamlit
-- google-genai
-- python-dotenv
-
-## Run locally (Windows)
+## Run locally
 
 1. `python -m venv .venv`
-2. `.venv\Scripts\activate` (Command Prompt) or `.venv\Scripts\Activate.ps1` (PowerShell)
+2. `.venv\Scripts\activate`
 3. `pip install -r requirements.txt`
 4. Optional: copy `.env.example` to `.env` and add `GEMINI_API_KEY`
 5. `streamlit run app.py`
-6. Paste the API key in the sidebar if it is not already in `.env`
-
-Test the API without Streamlit:
-
-```
-python test_gemini.py
-```
 
 ## Safeguards and limitations
 
-- Do not put a real API key in source files or GitHub.
-- The app needs internet access.
-- Gemini can be temporarily unavailable (HTTP 503 / high demand). Retry rather than assuming the key is wrong.
-- Output is assistance, not professional advice.
+PocketLedger is designed for preliminary record indexing. It does not replace a certified professional accounting audit. Images are processed in memory for the session and are not stored permanently.
 
-## Hack-Day build boundary
+## Hack Day build boundary
 
-Starter files in this folder were set up from the beginner build-day guide. The team's own problem, prompts, and domain logic should be added on top of this skeleton.
-
-## Team members
-
-Add names here.
+**Built today:** Streamlit UI, Gemini Vision prompts, JSON payload parser, metric dashboard, cash versus credit recalculation, 503 error handling, and a demo sample ledger generator.
