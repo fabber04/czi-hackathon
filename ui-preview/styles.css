@@ -652,10 +652,26 @@ body {
   color: var(--brown);
 }
 
-.promo .apps {
+.api-field {
   display: flex;
+  flex-direction: column;
   gap: 6px;
-  flex-wrap: wrap;
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brown);
+}
+
+.api-field input {
+  min-height: 36px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 10px;
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
 }
 
 .pill-mini {

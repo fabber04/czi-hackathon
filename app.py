@@ -573,6 +573,7 @@ st.set_page_config(
 
 st.session_state.setdefault("ledger_image", None)
 st.session_state.setdefault("ledger_jpeg", None)
+st.session_state.setdefault("ledger_file_id", "")
 st.session_state.setdefault("ledger_caption", "")
 st.session_state.setdefault("ledger_audio", None)
 st.session_state.setdefault("ledger_audio_mime", "audio/wav")
@@ -711,16 +712,19 @@ with st.container(border=True):
             help="Phone photos are resized to 1024px and saved as JPEG on upload.",
         )
         if uploaded_file is not None:
-            original = uploaded_file.getvalue()
-            jpeg = encode_ledger_jpeg(Image.open(io.BytesIO(original)))
-            st.session_state.ledger_jpeg = jpeg
-            st.session_state.ledger_image = Image.open(io.BytesIO(jpeg)).convert("RGB")
-            st.session_state.ledger_caption = (
-                f"Compressed {format_bytes(len(original))} → {format_bytes(len(jpeg))}"
-            )
-            st.session_state.ledger_audio = None
-            st.session_state.ledger_audio_id = ""
-            st.session_state.result = None
+            file_id = f"{getattr(uploaded_file, 'file_id', uploaded_file.name)}:{uploaded_file.size}:{uploaded_file.name}"
+            if st.session_state.ledger_file_id != file_id:
+                original = uploaded_file.getvalue()
+                jpeg = encode_ledger_jpeg(Image.open(io.BytesIO(original)))
+                st.session_state.ledger_jpeg = jpeg
+                st.session_state.ledger_image = Image.open(io.BytesIO(jpeg)).convert("RGB")
+                st.session_state.ledger_caption = (
+                    f"Compressed {format_bytes(len(original))} → {format_bytes(len(jpeg))}"
+                )
+                st.session_state.ledger_audio = None
+                st.session_state.ledger_audio_id = ""
+                st.session_state.ledger_file_id = file_id
+                st.session_state.result = None
     with voice_tab:
         st.caption(
             "Say the items, amounts, cash vs *chikwereti*, and who still owes you. "
