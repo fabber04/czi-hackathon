@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=dashboard" />
+  <link rel="stylesheet" href="styles.css?v=charts" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -141,14 +141,26 @@
             <div class="grid-2">
               <article class="card">
                 <div class="card-head"><h2>Cash versus credit</h2></div>
+                <div class="mix-visual">
+                  <div class="donut" id="mixDonut" role="img" aria-label="Cash versus credit share"></div>
+                  <div class="donut-legend">
+                    <p><span class="swatch cash"></span> Cash <b id="legendCash">$0.00</b></p>
+                    <p><span class="swatch credit"></span> Chikwereti <b id="legendCredit">$0.00</b></p>
+                    <p><span class="swatch expense"></span> Expenses <b id="legendExpense">$0.00</b></p>
+                  </div>
+                </div>
                 <div class="mix"><span class="mix-cash" id="mixCash"></span><span class="mix-credit" id="mixCredit"></span></div>
                 <p class="mix-caption" id="mixCaption"></p>
               </article>
               <article class="card">
-                <div class="card-head"><h2>Recent items</h2></div>
-                <div id="recentItems"></div>
+                <div class="card-head"><h2>Captured line items</h2></div>
+                <div class="item-bars" id="itemBars"></div>
               </article>
             </div>
+            <article class="card">
+              <div class="card-head"><h2>Recent items</h2></div>
+              <div id="recentItems"></div>
+            </article>
           </div>
         </section>
 
@@ -398,10 +410,46 @@
 
       const cashPct = revenue > 0 ? (cash / revenue) * 100 : 0;
       const creditPct = revenue > 0 ? (credit / revenue) * 100 : 0;
+      const expenses = rows
+        .filter((row) => String(row.payment_type || "").toLowerCase().includes("expense"))
+        .reduce((sum, row) => sum + Number(row.amount_usd || 0), 0);
+      const donutTotal = cash + credit + expenses;
+      const cashDeg = donutTotal > 0 ? (cash / donutTotal) * 360 : 0;
+      const creditDeg = donutTotal > 0 ? (credit / donutTotal) * 360 : 0;
+      document.getElementById("mixDonut").style.background = donutTotal > 0
+        ? `conic-gradient(var(--teal) 0 ${cashDeg}deg, var(--orange) ${cashDeg}deg ${cashDeg + creditDeg}deg, var(--rose) ${cashDeg + creditDeg}deg 360deg)`
+        : "#eceae6";
+      document.getElementById("mixDonut").setAttribute(
+        "aria-label",
+        `${Math.round(cashPct)} percent cash and ${Math.round(creditPct)} percent credit`
+      );
+      document.getElementById("legendCash").textContent = money(cash);
+      document.getElementById("legendCredit").textContent = money(credit);
+      document.getElementById("legendExpense").textContent = money(expenses);
       document.getElementById("mixCash").style.width = cashPct + "%";
       document.getElementById("mixCredit").style.width = creditPct + "%";
       document.getElementById("mixCaption").textContent =
         money(cash) + " cash · " + money(credit) + " chikwereti";
+
+      const maxAmount = Math.max(...rows.map((row) => Number(row.amount_usd || 0)), 1);
+      const payClass = (type) => {
+        const value = String(type || "").toLowerCase();
+        if (value.includes("credit")) return "credit";
+        if (value.includes("expense")) return "expense";
+        return "cash";
+      };
+      document.getElementById("itemBars").innerHTML = rows.length
+        ? rows.map((row) => {
+            const amount = Number(row.amount_usd || 0);
+            const width = Math.max(6, (amount / maxAmount) * 100);
+            const kind = payClass(row.payment_type);
+            return `<div class="item-bar-row">
+              <span class="item-bar-label">${escapeHtml(row.item || "Item")}</span>
+              <div class="item-bar-track"><span class="item-bar ${kind}" style="width:${width}%"></span></div>
+              <b>${money(amount)}</b>
+            </div>`;
+          }).join("")
+        : "<p class='widget-empty'>No line items to chart.</p>";
 
       document.getElementById("recentItems").innerHTML = rows.slice(0, 5).map((row) => (
         `<div class="tx-row"><div class="tx-ico">${escapeHtml((row.item || "?").slice(0, 1).toUpperCase())}</div>` +
@@ -411,7 +459,14 @@
 
       const txBody = document.getElementById("txBody");
       txBody.innerHTML = rows.length
-        ? rows.map((row) => `<tr><td>${escapeHtml(row.item)}</td><td>${escapeHtml(row.quantity)}</td><td>${money(row.amount_usd)}</td><td>${escapeHtml(row.payment_type)}</td><td>${escapeHtml(row.debtor)}</td></tr>`).join("")
+        ? rows.map((row) => {
+            const kind = String(row.payment_type || "").toLowerCase().includes("credit")
+              ? "credit"
+              : String(row.payment_type || "").toLowerCase().includes("expense")
+                ? "expense"
+                : "cash";
+            return `<tr><td>${escapeHtml(row.item)}</td><td>${escapeHtml(row.quantity)}</td><td>${money(row.amount_usd)}</td><td><span class="pay ${kind}">${escapeHtml(row.payment_type)}</span></td><td>${escapeHtml(row.debtor)}</td></tr>`;
+          }).join("")
         : `<tr><td colspan="5" class="empty-cell">No line items extracted.</td></tr>`;
 
       const debtors = rows.filter((row) => String(row.payment_type || "").toLowerCase().includes("credit") && row.debtor && row.debtor !== "N/A");
