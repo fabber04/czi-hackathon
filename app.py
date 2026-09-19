@@ -379,7 +379,7 @@ def build_statement_pdf(result: dict[str, Any]) -> bytes:
         0,
         5,
         "AI-assisted indexing only. Totals are recalculated from extracted line items. "
-        "Do not treat this as a tax audit or loan approval.",
+        "This is not an IT audit, tax audit, or certified financial report, and it is not a loan decision.",
     )
     return bytes(pdf.output())
 
@@ -639,7 +639,7 @@ with st.sidebar:
     with st.expander("Responsible AI", icon=":material/shield:"):
         st.caption(
             "PocketLedger is AI-assisted indexing for micro-finance evaluation. "
-            "It is not a tax audit or a loan approval."
+            "It is not an IT audit, tax audit, or certified financial report, and it is not a loan decision."
         )
 
 if not st.session_state.onboarded:
@@ -914,6 +914,7 @@ if result:
             st.markdown(summaries["IsiNdebele"])
         st.caption(
             "AI-assisted indexing only. Totals are recalculated from extracted line items. "
+            "This is not an IT audit, tax audit, or certified financial report. "
             "Pfupiso iyi haisi audit. Lesifinyezo akusona i-audit."
         )
 

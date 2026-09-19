@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=langs" />
+  <link rel="stylesheet" href="styles.css?v=disclaimer" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -178,6 +178,12 @@
                   <p id="overviewNdebele"></p>
                 </section>
               </div>
+              <aside class="report-disclaimer">
+                <strong>Disclaimer.</strong>
+                PocketLedger is AI-assisted indexing of a notebook or spoken statement. It is not an IT audit, tax audit, or certified financial report, and it is not a loan decision.
+                <span>ChiShona: Inongobatsira kuverenga bhuku. Haisi IT audit, tax audit, kana report yepamutemo.</span>
+                <span>IsiNdebele: Isiza ukufunda ibhuku. Akusiyo i-IT audit, i-tax audit, noma umbiko wezimali oqinisekisiwe.</span>
+              </aside>
             </article>
           </div>
         </section>
@@ -288,6 +294,10 @@
                 <tr><td colspan="5" class="empty-cell">No line items yet. Process a ledger photo or voice note first.</td></tr>
               </tbody>
             </table>
+            <aside class="report-disclaimer">
+              <strong>Disclaimer.</strong>
+              This ledger extract is AI-assisted indexing. It is not an IT audit, tax audit, or certified financial report, and it is not a loan decision.
+            </aside>
           </article>
         </section>
 
@@ -320,6 +330,12 @@
                 <p id="certNdebele"></p>
               </section>
             </div>
+            <aside class="report-disclaimer">
+              <strong>Disclaimer.</strong>
+              This certificate is AI-assisted indexing of a notebook or spoken statement. It is not an IT audit, tax audit, or certified financial report, and it is not a loan decision.
+              <span>ChiShona: Haisi IT audit, tax audit, kana report yepamutemo, uye haisi chisarudzo chechikwereti.</span>
+              <span>IsiNdebele: Akusiyo i-IT audit, i-tax audit, noma umbiko wezimali oqinisekisiwe, futhi akusona isinqumo sesikwelete.</span>
+            </aside>
           </article>
         </section>
       </main>
@@ -622,7 +638,7 @@
         ["Cash received: " + money(lastResult && lastResult.total_cash_usd), 12, false],
         ["Outstanding credit: " + money(lastResult && lastResult.total_credit_outstanding_usd), 12, false],
         [(lastResult && lastResult.business_health_summary) || "", 11, false],
-        ["PocketLedger provides AI-assisted indexing. This is not a certified audit.", 9, false],
+        ["PocketLedger is AI-assisted indexing. It is not an IT audit, tax audit, or certified financial report, and it is not a loan decision.", 9, false],
       ];
       const ops = [];
       let y = 790;

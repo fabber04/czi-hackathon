@@ -42,7 +42,7 @@ Optional HTML preview with the extract API: `python preview_server.py` then open
 
 ## Safeguards and limitations
 
-PocketLedger is AI-assisted indexing for micro-finance evaluation. It is not a certified audit or a loan decision. Images and recordings are processed in the session and are not stored permanently.
+PocketLedger is AI-assisted indexing for micro-finance evaluation. It is not an IT audit, tax audit, or certified financial report, and it is not a loan decision. Images and recordings are processed in the session and are not stored permanently.
 
 ## Hack Day build boundary
 

@@ -301,6 +301,26 @@ body {
   color: var(--ink);
 }
 
+.report-disclaimer {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f4efe6;
+  border-left: 4px solid var(--gold);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--brown);
+}
+
+.report-disclaimer strong {
+  color: var(--ink);
+}
+
+.report-disclaimer span {
+  display: block;
+  margin-top: 6px;
+}
+
 .mix-cash {
   background: var(--teal);
   min-width: 0;
