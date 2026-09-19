@@ -652,6 +652,43 @@ body {
   color: var(--brown);
 }
 
+.key-bar {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(25, 16, 3, 0.04);
+}
+
+.key-bar label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.key-bar input {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0 12px;
+  font: inherit;
+}
+
+.key-bar p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.key-bar a {
+  color: var(--orange-deep);
+}
+
 .api-field {
   display: flex;
   flex-direction: column;

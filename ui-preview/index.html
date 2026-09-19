@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=freshphoto" />
+  <link rel="stylesheet" href="styles.css?v=keybar" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -230,6 +230,11 @@
               </div>
             </article>
           </div>
+          <div class="key-bar">
+            <label for="geminiKeyCapture">Gemini API key</label>
+            <input id="geminiKeyCapture" type="password" autocomplete="off" placeholder="Paste key from Google AI Studio" />
+            <p>Needed to read a <em>new</em> photo here. Get a key at <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noreferrer">Google AI Studio</a>. It stays in this browser only.</p>
+          </div>
           <div style="margin-top:16px">
             <button class="btn-dark" type="button" id="processBtn" disabled>Process ledger with Gemini Vision</button>
           </div>
@@ -271,7 +276,7 @@
           </div>
           <div id="errorGeneral" class="banner danger hidden" role="alert">
             <div>
-              <h3>We couldn't read this ledger</h3>
+              <h3 id="errorGeneralTitle">We couldn't read this ledger</h3>
               <p>Try a clearer photo with better lighting.</p>
             </div>
           </div>
@@ -373,12 +378,22 @@
       "A clearer page means cleaner totals for the loan conversation.",
       "Voice works too: say the item, the amount, and who still owes.",
     ];
-    const GEMINI_MODELS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
+    const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-3.6-flash"];
     const geminiKeyInput = document.getElementById("geminiKey");
-    geminiKeyInput.value = sessionStorage.getItem("pocketledger_gemini_key") || "";
-    geminiKeyInput.addEventListener("change", () => {
-      sessionStorage.setItem("pocketledger_gemini_key", geminiKeyInput.value.trim());
-    });
+    const geminiKeyCapture = document.getElementById("geminiKeyCapture");
+    function currentGeminiKey() {
+      return (geminiKeyCapture.value || geminiKeyInput.value || "").trim();
+    }
+    function syncGeminiKey(value) {
+      const key = String(value || "").trim();
+      geminiKeyInput.value = key;
+      geminiKeyCapture.value = key;
+      if (key) sessionStorage.setItem("pocketledger_gemini_key", key);
+      else sessionStorage.removeItem("pocketledger_gemini_key");
+    }
+    syncGeminiKey(sessionStorage.getItem("pocketledger_gemini_key") || "");
+    geminiKeyInput.addEventListener("input", () => syncGeminiKey(geminiKeyInput.value));
+    geminiKeyCapture.addEventListener("input", () => syncGeminiKey(geminiKeyCapture.value));
 
     function extractionPrompt(source) {
       const listen = source === "audio"
@@ -421,7 +436,7 @@ Treat named debtors as Credit. Rent and stall fees are Expense, not sales. Amoun
     }
 
     async function extractWithGemini(b64, mime, source) {
-      const key = geminiKeyInput.value.trim();
+      const key = currentGeminiKey();
       if (!key) throw new Error("NO_KEY");
       const parts = [
         { text: extractionPrompt(source) },
@@ -445,7 +460,13 @@ Treat named debtors as Credit. Rent and stall fees are Expense, not sales. Amoun
         const body = await response.json().catch(() => ({}));
         if (!response.ok) {
           lastMessage = (body.error && body.error.message) || lastMessage;
-          if (response.status === 429 || /quota|rate|overload|503/i.test(lastMessage)) continue;
+          if (
+            response.status === 404 ||
+            response.status === 429 ||
+            /not found|quota|rate|overload|503|unavailable/i.test(lastMessage)
+          ) {
+            continue;
+          }
           throw new Error(lastMessage);
         }
         const text = ((body.candidates || [])[0] && (body.candidates[0].content || {}).parts || [])
@@ -644,7 +665,7 @@ Treat named debtors as Credit. Rent and stall fees are Expense, not sales. Amoun
       document.getElementById("fileSize").textContent = "Demo";
       document.getElementById("previewArt").innerHTML = "<p class='size'>Sample Gogo Chipo produce ledger</p>";
       processBtn.disabled = false;
-      processBtn.textContent = geminiKeyInput.value.trim()
+      processBtn.textContent = currentGeminiKey()
         ? "Process ledger with Gemini Vision"
         : "Play sample certificate";
     });
@@ -690,9 +711,10 @@ Treat named debtors as Credit. Rent and stall fees are Expense, not sales. Amoun
           payload = sampleLedger;
         } else {
           const data = await blobToB64(pendingMedia.blob);
-          if (geminiKeyInput.value.trim()) {
+          const key = currentGeminiKey();
+          if (key) {
             payload = await extractWithGemini(data, pendingMedia.mime, pendingMedia.source);
-          } else {
+          } else if (!location.hostname.endsWith("github.io")) {
             const response = await fetch("/api/extract", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -708,24 +730,27 @@ Treat named debtors as Credit. Rent and stall fees are Expense, not sales. Amoun
               if (response.status === 503 || /503|overload/i.test(message)) {
                 error503.classList.remove("hidden");
               } else {
-                errorGeneral.querySelector("p").textContent =
-                  location.hostname.endsWith("github.io")
-                    ? "This site cannot reuse a sample for a new photo. Paste a Gemini API key in the sidebar, or run streamlit run app.py."
-                    : message;
+                errorGeneral.querySelector("h3").textContent = "We couldn't read this ledger";
+                errorGeneral.querySelector("p").textContent = message;
                 errorGeneral.classList.remove("hidden");
               }
               return;
             }
+          } else {
+            throw new Error("NO_KEY");
           }
         }
         renderLedger(payload);
         showView("overview");
       } catch (error) {
         const message = String(error && error.message || error);
-        if (message === "NO_KEY" || location.hostname.endsWith("github.io")) {
+        if (message === "NO_KEY") {
+          errorGeneral.querySelector("h3").textContent = "Gemini key needed";
           errorGeneral.querySelector("p").textContent =
-            "Paste a Gemini API key in the sidebar to read this new photo. Try sample ledger only shows the Gogo Chipo demo.";
+            "Paste your Gemini API key in the box above, then process again. Get a key from Google AI Studio. Try sample ledger still works without a key.";
+          geminiKeyCapture.focus();
         } else {
+          errorGeneral.querySelector("h3").textContent = "We couldn't read this ledger";
           errorGeneral.querySelector("p").textContent = message;
         }
         errorGeneral.classList.remove("hidden");
