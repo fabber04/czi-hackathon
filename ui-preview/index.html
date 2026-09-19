@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PocketLedger — Dashboard Preview</title>
+  <title>PocketLedger</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20260919c" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -23,11 +24,11 @@
         <div>
           <p class="nav-label">Main</p>
           <nav class="nav" aria-label="Primary">
-            <button class="nav-link" data-view="overview" type="button">
+            <button class="nav-link active" data-view="overview" type="button">
               <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
               Overview
             </button>
-            <button class="nav-link active" data-view="capture" type="button">
+            <button class="nav-link" data-view="capture" type="button">
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M8 7V5h8v2M7 7v12h10V7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
               Capture
             </button>
@@ -76,7 +77,7 @@
           </div>
         </div>
 
-        <section class="view" id="view-overview">
+        <section class="view active" id="view-overview">
           <div class="page-head">
             <div>
               <h1>Overview</h1>
@@ -151,7 +152,7 @@
           </div>
         </section>
 
-        <section class="view active" id="view-capture">
+        <section class="view" id="view-capture">
           <div class="page-head">
             <div>
               <h1>Capture</h1>

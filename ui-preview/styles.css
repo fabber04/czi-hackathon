@@ -1215,7 +1215,7 @@ td {
   color: var(--rose);
 }
 
-@media (max-width: 980px) {
+@media (max-width: 720px) {
   .shell {
     grid-template-columns: 1fr;
   }
