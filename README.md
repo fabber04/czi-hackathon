@@ -8,7 +8,7 @@ Informal traders keep daily sales and *chikwereti* (customer credit) in paper no
 
 ## Demo
 
-[Live demo](https://fabber04.github.io/czi-hackathon/) — GitHub Pages redirects to the Streamlit app. Deploy `app.py` on [Streamlit Community Cloud](https://share.streamlit.io/deploy?repository=fabber04/czi-hackathon&branch=main&mainModule=app.py) (suggested URL: `https://czi-hackathon.streamlit.app`). Add `GEMINI_API_KEY` in Streamlit secrets. If your app URL is different, set the repo variable `STREAMLIT_APP_URL`. The HTML dashboard still runs locally with `python preview_server.py`.
+[Live demo](https://fabber04.github.io/czi-hackathon/) — GitHub Pages redirects to the Streamlit app. Deploy `app.py` on [Streamlit Community Cloud](https://share.streamlit.io/deploy?repository=fabber04/czi-hackathon&branch=main&mainModule=app.py) (suggested URL: `https://czi-hackathon.streamlit.app`). Add `GEMINI_API_KEY` in Streamlit secrets. If your app URL is different, set the repo variable `STREAMLIT_APP_URL`.
 
 **1. Capture.** Photograph a notebook page or dictate the day’s sales in English, ChiShona, or IsiNdebele.
 
@@ -38,7 +38,7 @@ Sample notebook images for the demo live in `samples/ledgers/`.
 4. Copy `.env.example` to `.env` and add `GEMINI_API_KEY`
 5. `streamlit run app.py`
 
-Optional HTML preview with the extract API: `python preview_server.py` then open [http://127.0.0.1:8765/](http://127.0.0.1:8765/).
+Before a demo, or after changing the Gemini prompt, run `python test_gemini.py`. It checks that the API key works, a model answers, and the reply parses as JSON.
 
 ## Safeguards and limitations
 
