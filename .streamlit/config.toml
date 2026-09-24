@@ -1,35 +1,35 @@
 [theme]
 base = "light"
-primaryColor = "#0B6E4F"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F4F6F8"
-textColor = "#15202B"
-linkColor = "#0B6E4F"
-borderColor = "#D8DEE6"
-dataframeBorderColor = "#D8DEE6"
-dataframeHeaderBackgroundColor = "#F4F6F8"
-codeBackgroundColor = "#F4F6F8"
+primaryColor = "#E8782F"
+backgroundColor = "#F8F8F7"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#191003"
+linkColor = "#B55824"
+borderColor = "#ECEAE6"
+dataframeBorderColor = "#ECEAE6"
+dataframeHeaderBackgroundColor = "#F3F2EF"
+codeBackgroundColor = "#F3F2EF"
 font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 headingFont = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap"
 baseFontSize = 15
 baseFontWeight = 400
-headingFontSizes = ["2rem", "1.4rem", "1.15rem", "1rem", "0.9rem", "0.8rem"]
+headingFontSizes = ["1.7rem", "1.25rem", "1.05rem", "1rem", "0.9rem", "0.8rem"]
 headingFontWeights = [650, 600, 600, 600, 500, 500]
-baseRadius = "0.5rem"
-buttonRadius = "0.5rem"
+baseRadius = "0.9rem"
+buttonRadius = "6rem"
 showWidgetBorder = true
 showSidebarBorder = true
 linkUnderline = false
-chartCategoricalColors = ["#0B6E4F", "#1B4F72", "#C9A227", "#C0392B", "#5D6D7E", "#1ABC9C"]
-greenColor = "#0B6E4F"
-blueColor = "#1B4F72"
-redColor = "#C0392B"
-orangeColor = "#C9A227"
-grayColor = "#5D6D7E"
+chartCategoricalColors = ["#3F8D82", "#E8782F", "#C45C4A", "#C29464", "#614318", "#191003"]
+greenColor = "#3F8D82"
+blueColor = "#3F8D82"
+redColor = "#C45C4A"
+orangeColor = "#E8782F"
+grayColor = "#8B8680"
 
 [theme.sidebar]
-backgroundColor = "#0F2A3D"
-secondaryBackgroundColor = "#16364C"
-textColor = "#F4F7FA"
-borderColor = "#1E4A66"
-primaryColor = "#3DDC97"
+backgroundColor = "#F3F2EF"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#191003"
+borderColor = "#ECEAE6"
+primaryColor = "#E8782F"
