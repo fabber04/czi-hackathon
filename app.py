@@ -605,10 +605,26 @@ def resolve_api_key() -> str:
         return ""
 
 
+DISCLAIMER = (
+    "PocketLedger is AI-assisted indexing of a notebook or spoken statement. "
+    "It is not an IT audit, tax audit, or certified financial report, and it is not a loan decision. "
+    "ChiShona: Haisi IT audit, tax audit, kana report yepamutemo. "
+    "IsiNdebele: Akusiyo i-IT audit, i-tax audit, noma umbiko wezimali oqinisekisiwe."
+)
+
+
 st.logo(brand_mark(), size="large")
+st.html(
+    """
+    <style>
+      .stApp { background: #f8f8f7; }
+      [data-testid="stHeader"] { background: #f8f8f7; }
+    </style>
+    """
+)
 with st.sidebar:
     st.header("PocketLedger")
-    st.caption("Cash versus chikwereti certificates for informal traders.")
+    st.caption("Cash versus chikwereti for informal traders.")
     api_key = resolve_api_key()
     if api_key:
         st.badge("Gemini ready", icon=":material/check_circle:", color="green")
@@ -618,7 +634,7 @@ with st.sidebar:
             type="password",
             help="Add GEMINI_API_KEY to a local .env file so you only set it once.",
         )
-        st.caption("[Get an API key](https://aistudio.google.com/)")
+        st.caption("[Get an API key](https://aistudio.google.com/api-keys)")
     if st.session_state.onboarded:
         st.subheader("Business", divider="gray")
         st.markdown(f"**{st.session_state.business_name or 'Unnamed business'}**")
@@ -637,16 +653,25 @@ with st.sidebar:
             key="summary_language",
             persist_state="session",
         )
+        st.subheader("Chikwereti")
+        credit_rows = [
+            row
+            for row in ((st.session_state.result or {}).get("transactions") or [])
+            if "credit" in str(row.get("payment_type") or "").lower()
+            and row.get("debtor") not in (None, "", "N/A")
+        ]
+        if credit_rows:
+            for row in credit_rows:
+                st.caption(f"{row.get('debtor')}  ·  {_money(row.get('amount_usd'))}")
+        else:
+            st.caption("No outstanding credit yet. Process a ledger to list debtors here.")
     with st.expander("Responsible AI", icon=":material/shield:"):
-        st.caption(
-            "PocketLedger is AI-assisted indexing for micro-finance evaluation. "
-            "It is not an IT audit, tax audit, or certified financial report, and it is not a loan decision."
-        )
+        st.caption(DISCLAIMER)
 
 if not st.session_state.onboarded:
     left, mid, right = st.columns((1, 1.3, 1), gap="large")
     with mid:
-        st.title("Set up your business", icon=":material/storefront:")
+        st.title("Set up your business")
         st.caption("Choose the trade that matches this ledger. That category stays on the certificate.")
         with st.form("onboarding", border=True):
             st.text_input(
@@ -685,20 +710,94 @@ if not st.session_state.onboarded:
                     st.rerun()
     st.stop()
 
-st.title("PocketLedger", icon=":material/menu_book:")
+result = st.session_state.result
+summary_lang = current_summary_language()
+if result:
+    attach_local_summaries(result)
+
+st.title("PocketLedger")
 st.caption("Turn a handwritten notebook page or a spoken statement into a cash-versus-credit certificate.")
 with st.container(horizontal=True):
     if st.session_state.business_category:
-        st.badge(st.session_state.business_category, icon=":material/category:", color="green")
+        st.badge(st.session_state.business_category, icon=":material/category:", color="orange")
     st.badge(
         f"{len(st.session_state.saved_ledgers)} saved",
         icon=":material/folder:",
         color="blue",
     )
 
-with st.container(border=True):
-    st.header("Capture a ledger", icon=":material/photo_camera:")
-    st.caption("Upload a notebook photo from samples/ledgers, or speak the day's sales.")
+overview_tab, capture_tab, tx_tab, cert_tab = st.tabs(
+    ["Overview", "Capture", "Transactions", "Certificate"]
+)
+
+with overview_tab:
+    if not result:
+        st.subheader("Waiting for a ledger")
+        st.caption("Charts, line items, and collections appear after Gemini extracts a photo or spoken statement.")
+    else:
+        business = result.get("business_name", "Unspecified")
+        date = result.get("date", "Unspecified")
+        st.caption(f"{business} · {date}")
+        c1, c2, c3, c4 = st.columns(4)
+        revenue = float(result.get("total_revenue_usd") or 0)
+        cash = float(result.get("total_cash_usd") or 0)
+        credit = float(result.get("total_credit_outstanding_usd") or 0)
+        c1.metric("Recorded revenue", revenue, border=True, format="dollar")
+        c2.metric("Cash received", cash, border=True, format="dollar")
+        c3.metric("Outstanding credit", credit, border=True, format="dollar")
+        c4.metric("Credit share", f"{round((credit / revenue) * 100)}%" if revenue else "—", border=True)
+        mix = payment_mix_df(result.get("transactions") or [])
+        items = item_amount_df(result.get("transactions") or [])
+        chart_left, chart_right = st.columns(2)
+        with chart_left:
+            st.subheader("Cash versus credit")
+            if not mix.empty:
+                st.bar_chart(mix, x="Payment type", y="Amount", horizontal=True)
+        with chart_right:
+            st.subheader("Captured line items")
+            if not items.empty:
+                st.bar_chart(items.head(8), x="Item", y="Amount")
+        st.subheader("Market language summary")
+        summaries = {
+            "English": result.get("business_health_summary") or "Summary unavailable.",
+            "ChiShona": result.get("summary_shona") or "Hapana pfupiso.",
+            "IsiNdebele": result.get("summary_ndebele") or "Asikho isifinyezo.",
+        }
+        english_col, shona_col, ndebele_col = st.columns(3)
+        with english_col:
+            st.markdown("**English**")
+            st.markdown(summaries["English"])
+        with shona_col:
+            st.markdown("**ChiShona**")
+            st.markdown(summaries["ChiShona"])
+        with ndebele_col:
+            st.markdown("**IsiNdebele**")
+            st.markdown(summaries["IsiNdebele"])
+        st.caption(DISCLAIMER)
+    saved_ledgers = st.session_state.saved_ledgers
+    if saved_ledgers:
+        trend = history_and_projection_df(saved_ledgers)
+        recorded = trend[trend["Kind"] == "Recorded"]
+        projected = trend[trend["Kind"] == "Projected"]
+        week_revenue = float(projected["Revenue"].sum()) if not projected.empty else 0.0
+        week_cash = float(projected["Cash"].sum()) if not projected.empty else 0.0
+        next_credit = float(projected["Credit"].iloc[0]) if not projected.empty else 0.0
+        st.subheader("Projection")
+        st.caption(
+            f"{len(saved_ledgers)} saved statement(s). "
+            "This is a simple trend from recorded pages, not a credit decision."
+        )
+        m1, m2, m3 = st.columns(3)
+        m1.metric("7-day revenue", week_revenue, border=True, format="dollar")
+        m2.metric("7-day cash", week_cash, border=True, format="dollar")
+        m3.metric("Projected credit", next_credit, border=True, format="dollar")
+        proj_copy = projection_local_summaries(week_revenue, week_cash, next_credit)
+        st.markdown(proj_copy.get(summary_lang) or proj_copy["ChiShona"])
+        st.line_chart(trend, x="Period", y=["Revenue", "Cash", "Credit"])
+
+with capture_tab:
+    st.header("Capture")
+    st.caption("Photograph the notebook, or speak the day's sales in English, ChiShona, or IsiNdebele.")
     upload_tab, voice_tab = st.tabs(
         [
             ":material/upload: Upload photo",
@@ -770,11 +869,7 @@ with st.container(border=True):
             st.audio(ledger_audio, format=st.session_state.ledger_audio_mime)
             st.caption(st.session_state.ledger_caption)
         with actions:
-            st.subheader("Extract with Gemini", icon=":material/graphic_eq:")
-            st.caption(
-                "Gemini listens for items, cash versus *chikwereti*, and amounts, "
-                "then returns JSON the app can verify."
-            )
+            st.subheader("Extract with Gemini")
             if st.button(
                 "Process spoken statement",
                 type="primary",
@@ -807,14 +902,9 @@ with st.container(border=True):
                     width=196,
                     output_format="JPEG",
                 )
-                st.badge("Ledger photo", icon=":material/photo:", color="blue")
                 st.caption(st.session_state.ledger_caption)
             with st.container():
-                st.subheader("Extract with Gemini", icon=":material/document_scanner:")
-                st.caption(
-                    "On upload the photo is reduced to 1024px JPEG. "
-                    "Gemini still classifies cash versus *chikwereti*."
-                )
+                st.subheader("Extract with Gemini")
                 if st.button(
                     "Process ledger",
                     type="primary",
@@ -843,44 +933,16 @@ with st.container(border=True):
                             capture_source="image",
                         )
 
-result = st.session_state.result
-summary_lang = current_summary_language()
-if result:
-    attach_local_summaries(result)
-    business = result.get("business_name", "Unspecified")
-    date = result.get("date", "Unspecified")
-    category = result.get("business_category") or st.session_state.business_category
-    with st.container(border=True):
-        st.header("Certificate", icon=":material/verified:")
-        st.caption(f"{business} · {date}" + (f" · {category}" if category else ""))
-        if result.get("capture_source") == "audio":
-            st.badge("Spoken statement", icon=":material/mic:", color="blue")
-        transcript = _plain(result.get("transcript"))
-        if transcript:
-            with st.expander("Spoken transcript", icon=":material/record_voice_over:"):
-                st.write(transcript)
-        with st.container(horizontal=True):
-            st.metric(
-                "Recorded revenue",
-                result.get("total_revenue_usd", 0.0),
-                border=True,
-                format="dollar",
-            )
-            st.metric(
-                "Cash received",
-                result.get("total_cash_usd", 0.0),
-                border=True,
-                format="dollar",
-            )
-            st.metric(
-                "Outstanding credit",
-                result.get("total_credit_outstanding_usd", 0.0),
-                border=True,
-                format="dollar",
-            )
-
+with tx_tab:
+    st.header("Transactions")
+    st.caption("Line items extracted from the last processed page.")
+    if not result:
+        st.info("Process a ledger photo or voice note first.")
+    else:
         tx_df = pd.DataFrame(result.get("transactions") or [])
-        if not tx_df.empty:
+        if tx_df.empty:
+            st.info("No line items extracted.")
+        else:
             display_df = tx_df.rename(
                 columns={
                     "item": "Item",
@@ -890,7 +952,6 @@ if result:
                     "debtor": "Debtor",
                 }
             )
-            st.subheader("Line items", icon=":material/table:")
             st.dataframe(
                 display_df,
                 hide_index=True,
@@ -898,15 +959,29 @@ if result:
                     "Amount (USD)": st.column_config.NumberColumn(format="dollar"),
                 },
             )
+        st.caption(DISCLAIMER)
 
+with cert_tab:
+    st.header("Certificate")
+    if not result:
+        st.info("After Gemini reads a ledger, the financial health assessment will appear here.")
+    else:
+        business = result.get("business_name", "Unspecified")
+        date = result.get("date", "Unspecified")
+        category = result.get("business_category") or st.session_state.business_category
+        st.caption(f"{business} · {date}" + (f" · {category}" if category else ""))
+        if result.get("capture_source") == "audio":
+            st.badge("Spoken statement", icon=":material/mic:", color="blue")
+        transcript = _plain(result.get("transcript"))
+        if transcript:
+            with st.expander("Spoken transcript", icon=":material/record_voice_over:"):
+                st.write(transcript)
         summaries = {
             "English": result.get("business_health_summary") or "Summary unavailable.",
             "ChiShona": result.get("summary_shona") or "Hapana pfupiso.",
             "IsiNdebele": result.get("summary_ndebele") or "Asikho isifinyezo.",
         }
-        st.subheader("Local summary", icon=":material/translate:")
-        st.caption("English, ChiShona, and IsiNdebele so a trader who does not use English can still hear the day's book.")
-        english_col, shona_col, ndebele_col = st.columns(3, gap="medium")
+        english_col, shona_col, ndebele_col = st.columns(3)
         with english_col:
             st.markdown("**English**")
             st.markdown(summaries["English"])
@@ -916,125 +991,13 @@ if result:
         with ndebele_col:
             st.markdown("**IsiNdebele**")
             st.markdown(summaries["IsiNdebele"])
-        st.caption(
-            "AI-assisted indexing only. Totals are recalculated from extracted line items. "
-            "This is not an IT audit, tax audit, or certified financial report. "
-            "Pfupiso iyi haisi audit. Lesifinyezo akusona i-audit."
+        st.download_button(
+            label="Download PDF certificate",
+            data=build_statement_pdf(result),
+            file_name=statement_pdf_filename(result),
+            mime="application/pdf",
+            icon=":material/download:",
+            type="primary",
         )
+        st.caption(DISCLAIMER)
 
-        mix = payment_mix_df(result.get("transactions") or [])
-        items = item_amount_df(result.get("transactions") or [])
-        download_col, visuals_col = st.columns((1, 1.5), gap="large")
-        with download_col:
-            st.subheader("Export", icon=":material/picture_as_pdf:")
-            st.download_button(
-                label="Download PDF certificate",
-                data=build_statement_pdf(result),
-                file_name=statement_pdf_filename(result),
-                mime="application/pdf",
-                icon=":material/download:",
-                type="primary",
-            )
-            st.caption("This statement is saved for the 7-day projection.")
-        with visuals_col:
-            st.subheader("This page", icon=":material/bar_chart:")
-            if not mix.empty:
-                st.bar_chart(
-                    mix,
-                    x="Payment type",
-                    y="Amount",
-                    horizontal=True,
-                    x_label="Payment type",
-                    y_label="Amount (USD)",
-                )
-            if not items.empty:
-                st.bar_chart(
-                    items.head(8),
-                    x="Item",
-                    y="Amount",
-                    x_label="Item",
-                    y_label="Amount (USD)",
-                )
-            if mix.empty and items.empty:
-                st.caption("No transaction amounts to chart for this ledger.")
-
-saved_ledgers = st.session_state.saved_ledgers
-if saved_ledgers:
-    trend = history_and_projection_df(saved_ledgers)
-    recorded = trend[trend["Kind"] == "Recorded"]
-    projected = trend[trend["Kind"] == "Projected"]
-    week_revenue = float(projected["Revenue"].sum()) if not projected.empty else 0.0
-    week_cash = float(projected["Cash"].sum()) if not projected.empty else 0.0
-    next_credit = float(projected["Credit"].iloc[0]) if not projected.empty else 0.0
-    revenue_history = recorded["Revenue"].tolist()
-    with st.container(border=True):
-        st.header("Projection", icon=":material/trending_up:")
-        st.caption(
-            f"{len(saved_ledgers)} saved statement(s). "
-            "This is a simple trend from recorded pages, not a credit decision."
-        )
-        with st.container(horizontal=True):
-            st.metric(
-                "7-day revenue",
-                week_revenue,
-                border=True,
-                format="dollar",
-                chart_data=revenue_history + projected["Revenue"].tolist(),
-                chart_type="line",
-            )
-            st.metric(
-                "7-day cash",
-                week_cash,
-                border=True,
-                format="dollar",
-                chart_data=recorded["Cash"].tolist() + projected["Cash"].tolist(),
-                chart_type="line",
-            )
-            st.metric(
-                "Projected credit",
-                next_credit,
-                border=True,
-                format="dollar",
-                chart_data=recorded["Credit"].tolist() + projected["Credit"].tolist(),
-                chart_type="line",
-            )
-        proj_copy = projection_local_summaries(week_revenue, week_cash, next_credit)
-        st.markdown(proj_copy.get(summary_lang) or proj_copy["ChiShona"])
-        if result is None:
-            last_ledger = dict(saved_ledgers[-1])
-            attach_local_summaries(last_ledger)
-            last_local = {
-                "English": last_ledger.get("business_health_summary") or "",
-                "ChiShona": last_ledger.get("summary_shona") or "",
-                "IsiNdebele": last_ledger.get("summary_ndebele") or "",
-            }.get(summary_lang)
-            if last_local:
-                st.caption("Last saved ledger")
-                st.markdown(last_local)
-        chart_col, table_col = st.columns((1.6, 1), gap="large")
-        with chart_col:
-            st.line_chart(
-                trend,
-                x="Period",
-                y=["Revenue", "Cash", "Credit"],
-                x_label="Saved ledger / forecast day",
-                y_label="USD",
-            )
-        with table_col:
-            history_table = recorded.rename(
-                columns={
-                    "Period": "Ledger",
-                    "Revenue": "Revenue (USD)",
-                    "Cash": "Cash (USD)",
-                    "Credit": "Credit (USD)",
-                }
-            ).drop(columns=["Kind"])
-            st.dataframe(
-                history_table,
-                hide_index=True,
-                column_config={
-                    "Revenue (USD)": st.column_config.NumberColumn(format="dollar"),
-                    "Cash (USD)": st.column_config.NumberColumn(format="dollar"),
-                    "Credit (USD)": st.column_config.NumberColumn(format="dollar"),
-                },
-            )

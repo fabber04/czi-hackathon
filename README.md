@@ -8,7 +8,7 @@ Informal traders keep daily sales and *chikwereti* (customer credit) in paper no
 
 ## Demo
 
-[Live UI on GitHub Pages](https://fabber04.github.io/czi-hackathon/) — PocketLedger dashboard (Overview, Capture, Transactions, Certificate). Live Gemini extraction runs locally with `python preview_server.py` or `streamlit run app.py`.
+[Live demo](https://fabber04.github.io/czi-hackathon/) — GitHub Pages redirects to the Streamlit app. Deploy `app.py` on [Streamlit Community Cloud](https://share.streamlit.io/deploy?repository=fabber04/czi-hackathon&branch=main&mainModule=app.py) (suggested URL: `https://czi-hackathon.streamlit.app`). Add `GEMINI_API_KEY` in Streamlit secrets. If your app URL is different, set the repo variable `STREAMLIT_APP_URL`. The HTML dashboard still runs locally with `python preview_server.py`.
 
 **1. Capture.** Photograph a notebook page or dictate the day’s sales in English, ChiShona, or IsiNdebele.
 
