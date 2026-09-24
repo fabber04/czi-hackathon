@@ -116,6 +116,11 @@ def extract_structured_ledger(
             data = run_gemini_extraction(client, prompt, media)
             st.session_state.result = apply_extraction_result(data, capture_source)
             persist_ledger(st.session_state.result)
+            st.session_state.processed_capture_id = (
+                st.session_state.ledger_audio_id
+                if capture_source == "audio"
+                else st.session_state.ledger_file_id
+            )
             st.toast("Ledger saved to this trader's history.", icon=":material/check_circle:")
         except Exception as error:
             message = friendly_gemini_error(error)
@@ -268,6 +273,7 @@ st.session_state.setdefault("ledger_caption", "")
 st.session_state.setdefault("ledger_audio", None)
 st.session_state.setdefault("ledger_audio_mime", "audio/wav")
 st.session_state.setdefault("ledger_audio_id", "")
+st.session_state.setdefault("processed_capture_id", "")
 st.session_state.setdefault("result", None)
 st.session_state.setdefault("onboarded", False)
 st.session_state.setdefault("business_name", "")
@@ -557,10 +563,16 @@ with capture_tab:
             st.caption(st.session_state.ledger_caption)
         with actions:
             st.subheader("Extract with Gemini")
+            already_processed = (
+                bool(st.session_state.ledger_audio_id)
+                and st.session_state.ledger_audio_id == st.session_state.processed_capture_id
+            )
+            if already_processed:
+                st.caption("This statement is already saved. Reprocess only if you want Gemini to read it again.")
             if st.button(
-                "Process spoken statement",
-                type="primary",
-                icon=":material/play_arrow:",
+                "Reprocess spoken statement" if already_processed else "Process spoken statement",
+                type="secondary" if already_processed else "primary",
+                icon=":material/replay:" if already_processed else ":material/play_arrow:",
                 width="stretch",
             ):
                 if not api_key:
@@ -592,10 +604,16 @@ with capture_tab:
                 st.caption(st.session_state.ledger_caption)
             with st.container():
                 st.subheader("Extract with Gemini")
+                already_processed = (
+                    bool(st.session_state.ledger_file_id)
+                    and st.session_state.ledger_file_id == st.session_state.processed_capture_id
+                )
+                if already_processed:
+                    st.caption("This photo is already saved. Reprocess only if you want Gemini to read it again.")
                 if st.button(
-                    "Process ledger",
-                    type="primary",
-                    icon=":material/play_arrow:",
+                    "Reprocess ledger" if already_processed else "Process ledger",
+                    type="secondary" if already_processed else "primary",
+                    icon=":material/replay:" if already_processed else ":material/play_arrow:",
                     width="stretch",
                 ):
                     if not api_key:
