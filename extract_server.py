@@ -1,30 +1,16 @@
+"""Extract API for the Android app. The Gemini key stays in this machine's .env."""
+
 import json
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from dotenv import load_dotenv
 
 from ledger_core import extract_ledger, friendly_gemini_error, is_rate_limit_error
 
-ROOT = Path(__file__).resolve().parent
-PREVIEW_DIR = ROOT / "ui-preview"
-load_dotenv(ROOT / ".env")
+load_dotenv()
 
 
-class Handler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(PREVIEW_DIR), **kwargs)
-
-    def end_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        super().end_headers()
-
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self.end_headers()
-
+class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path.split("?", 1)[0] != "/api/extract":
             self.send_error(404, "Not found")
@@ -65,6 +51,6 @@ class Handler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = 8765
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(f"PocketLedger preview + extract API: http://127.0.0.1:{port}/")
+    server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
+    print(f"PocketLedger extract API listening on http://0.0.0.0:{port}/api/extract")
     server.serve_forever()

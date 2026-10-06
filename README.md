@@ -8,7 +8,7 @@ Informal traders keep daily sales and *chikwereti* (customer credit) in paper no
 
 ## Demo
 
-[Live UI on GitHub Pages](https://fabber04.github.io/czi-hackathon/) — PocketLedger dashboard (Overview, Capture, Transactions, Certificate). Live Gemini extraction runs locally with `python preview_server.py` or `streamlit run app.py`.
+[Live demo](https://fabber04.github.io/czi-hackathon/) — GitHub Pages redirects to the Streamlit app. Deploy `app.py` on [Streamlit Community Cloud](https://share.streamlit.io/deploy?repository=fabber04/czi-hackathon&branch=main&mainModule=app.py) (suggested URL: `https://czi-hackathon.streamlit.app`). Add `GEMINI_API_KEY` in Streamlit secrets. If your app URL is different, set the repo variable `STREAMLIT_APP_URL`.
 
 **1. Capture.** Photograph a notebook page or dictate the day’s sales in English, ChiShona, or IsiNdebele.
 
@@ -38,7 +38,15 @@ Sample notebook images for the demo live in `samples/ledgers/`.
 4. Copy `.env.example` to `.env` and add `GEMINI_API_KEY`
 5. `streamlit run app.py`
 
-Optional HTML preview with the extract API: `python preview_server.py` then open [http://127.0.0.1:8765/](http://127.0.0.1:8765/).
+Before a demo, or after changing the Gemini prompt, run `python test_gemini.py`. It checks that the API key works, a model answers, and the reply parses as JSON.
+
+## Android
+
+The phone app is in `mobile/`. It photographs a notebook and sends the picture to this computer, which calls Gemini. The API key stays in `.env`.
+
+1. `python extract_server.py` (listens on port 8765 for the phone)
+2. `cd mobile` then `flutter run`, or `flutter build apk`
+3. On an emulator the API address is `http://10.0.2.2:8765`. On a phone, use the laptop's Wi-Fi address, for example `http://192.168.100.100:8765`.
 
 ## Safeguards and limitations
 
